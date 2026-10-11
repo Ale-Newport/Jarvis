@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Fixture Flights</title>
+<style>
+ body{font:15px system-ui;margin:0;background:#202124;color:#e8eaed}
+ header{padding:12px 24px;border-bottom:1px solid #444}
+ main{padding:24px;max-width:980px;margin:auto}
+ button,input,[role=combobox]{font:inherit;color:inherit;background:#303134;border:1px solid #5f6368;border-radius:8px;padding:8px 12px;cursor:pointer}
+ .row{display:flex;gap:10px;margin:10px 0;align-items:center;flex-wrap:wrap;position:relative}
+ [role=listbox],[role=menu],dialog,.popup{position:absolute;top:100%;background:#303134;border:1px solid #5f6368;border-radius:8px;padding:8px;z-index:20;min-width:220px}
+ [role=option],[role=menuitemradio]{padding:8px;cursor:pointer;display:block}
+ .cal{display:grid;grid-template-columns:repeat(7,44px);gap:2px}
+ .cal button{padding:6px 0;text-align:center}
+ .radio{position:relative;display:flex;gap:8px;padding:8px;align-items:center}
+ .radio input{position:absolute;left:0;opacity:0;width:32px;height:32px}
+ .radio label{cursor:default}
+ ul{list-style:none;padding:0} li.flight{border:1px solid #5f6368;border-radius:8px;padding:12px;margin:8px 0;display:flex;gap:24px}
+ .err{padding:24px;text-align:center}
+</style></head>
+<body>
+<header><strong>Fixture Flights</strong></header>
+<main id="app"></main>
+<script>
+const q = new URLSearchParams(location.search);
+const $ = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstChild; };
+const CITIES = {London:'London, United Kingdom', Madrid:'Madrid, Spain', Paris:'Paris, France', Lisbon:'Lisbon, Portugal', Rome:'Rome, Italy'};
+const FLIGHTS = [
+  {airline:'Ryanair',dep:'3:10 PM',arr:'6:40 PM',dur:'2 hr 30 min',stops:0,price:23},
+  {airline:'easyJet',dep:'4:20 PM',arr:'7:50 PM',dur:'2 hr 30 min',stops:0,price:29},
+  {airline:'Iberia',dep:'11:45 AM',arr:'3:05 PM',dur:'2 hr 20 min',stops:0,price:99},
+  {airline:'Air Europa',dep:'10:00 AM',arr:'1:30 PM',dur:'2 hr 30 min',stops:0,price:91},
+  {airline:'TAP Air Portugal',dep:'7:05 AM',arr:'1:55 PM',dur:'5 hr 50 min',stops:1,price:61},
+  {airline:'Vueling',dep:'6:00 AM',arr:'1:20 PM',dur:'6 hr 20 min',stops:1,price:48},
+];
+const state = {trip: q.get('trip') || 'Round trip', cls:'Economy', from:q.get('from')||'', to:q.get('to')||'', date:q.get('date')||'', pax:+(q.get('pax')||1),
+  stops:q.get('stops')||'any', sort:q.get('sort')||'top'};
+const app = document.getElementById('app');
+const fmt = (iso) => iso ? new Date(iso+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+let open = null;
+function closeAll(){ document.querySelectorAll('.popup,[role=listbox],[role=menu],dialog').forEach(e=>e.remove()); open=null; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+
+function renderForm(){
+  app.innerHTML = '';
+  app.append($(`<h1>Flights</h1>`));
+  const row1 = $(`<div class="row"></div>`);
+  const trip = $(`<div role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="Change ticket type. ${state.trip}">${state.trip}</div>`);
+  trip.onclick = () => { closeAll(); const lb = $(`<ul role="listbox" aria-label="Select your ticket type."></ul>`);
+    for (const o of ['Round trip','One way','Multi-city']) { const li = $(`<li role="option" aria-selected="${o===state.trip}">${o}</li>`); li.onclick = () => { state.trip = o; closeAll(); renderForm(); }; lb.append(li); }
+    trip.after(lb); };
+  const pax = $(`<button aria-label="${state.pax} passenger${state.pax>1?'s':''}, change number of passengers.">${state.pax}</button>`);
+  pax.onclick = () => { closeAll(); const d = $(`<div class="popup" role="dialog" aria-label="Passengers"><div class="row">Adults <button aria-label="Remove adult">−</button><span>${state.pax}</span><button aria-label="Add adult">+</button></div><button>Done</button></div>`);
+    d.querySelector('[aria-label="Add adult"]').onclick = () => { state.pax++; closeAll(); renderForm(); };
+    d.querySelector('[aria-label="Remove adult"]').onclick = () => { state.pax = Math.max(1, state.pax-1); closeAll(); renderForm(); };
+    d.lastChild.onclick = () => { closeAll(); renderForm(); }; pax.after(d); };
+  const cls = $(`<div role="combobox" tabindex="0" aria-label="Change seating class. ${state.cls}">${state.cls}</div>`);
+  row1.append(trip, pax, cls); app.append(row1);
+  const row2 = $(`<div class="row"></div>`);
+  for (const [key, label] of [['from','Where from?'],['to','Where to?']]) {
+    const inp = $(`<input role="combobox" aria-label="${label}" aria-autocomplete="list" aria-controls="sug-${key}" value="${state[key]}" autocomplete="off">`);
+    inp.oninput = () => { document.getElementById('sug-'+key)?.remove(); const v = inp.value.toLowerCase(); if (!v) return;
+      const lb = $(`<ul role="listbox" id="sug-${key}"></ul>`);
+      for (const [name, full] of Object.entries(CITIES)) if (name.toLowerCase().startsWith(v.slice(0,2)) || name.toLowerCase().includes(v)) {
+        const li = $(`<li role="option">${full}</li>`); li.onclick = () => { state[key] = name; renderForm(); }; lb.append(li); }
+      inp.after(lb); };
+    row2.append(inp);
+  }
+  const date = $(`<input aria-label="Departure" aria-describedby="date-hint" readonly value="${fmt(state.date)}" placeholder="Departure"><span id="date-hint" hidden>Enter a date or use the arrow keys to change the current date</span>`);
+  row2.append(date);
+  date.onclick = () => { closeAll(); const d = $(`<div class="popup" role="dialog" aria-modal="true" aria-label="Departure date"></div>`);
+    const cal = $(`<div class="cal"></div>`);
+    for (let day = 1; day <= 30; day++) { const iso = `2026-11-${String(day).padStart(2,'0')}`; const dt = new Date(iso+'T12:00:00');
+      const b = $(`<button aria-label="${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}">${day}</button>`);
+      b.onclick = () => { state.date = iso; date.value = fmt(iso); cal.dataset.pick = iso; done.setAttribute('aria-label', `Done. Search for ${state.trip.toLowerCase()} flights, departing on ${dt.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`); };
+      cal.append(b); }
+    const done = $(`<button aria-label="Done">Done</button>`); done.onclick = () => { setTimeout(() => { closeAll(); renderForm(); }, 120); };
+    d.append($(`<div>November 2026</div>`), cal, done); date.after(d); };
+  app.append(row2);
+  const search = $(`<button aria-label="Search">Search</button>`);
+  search.onclick = () => { const p = new URLSearchParams({view:'results', trip:state.trip, from:state.from, to:state.to, date:state.date, pax:state.pax, stops:'any', sort:'top'}); location.href = '/site/flights.html?' + p; };
+  app.append($(`<div class="row"></div>`)); app.lastChild.append(search);
+  app.append($(`<p>Explore destinations. Flexible dates, cheapest flights and more.</p>`));
+}
+
+function renderResults(){
+  app.innerHTML = '';
+  document.title = `${CITIES[state.from]?.split(',')[0] || state.from} to ${CITIES[state.to]?.split(',')[0] || state.to} | Fixture Flights`;
+  app.append($(`<div class="row"><span>${state.trip}</span><span>${state.pax}</span><span>${state.cls}</span></div>`));
+  app.append($(`<div class="row"><input aria-label="Where from?" role="combobox" value="${state.from}" readonly><input aria-label="Where to?" role="combobox" value="${state.to}" readonly><input aria-label="Departure" readonly value="${fmt(state.date)}"></div>`));
+  const chips = $(`<div class="row"></div>`);
+  const stopsLabel = state.stops === 'nonstop' ? 'Nonstop, Stops, Selected' : 'Stops, Not selected';
+  const stops = $(`<button aria-haspopup="dialog" aria-expanded="false">${stopsLabel}</button>`);
+  stops.onclick = () => { closeAll(); const p = $(`<div class="popup" role="dialog" aria-label="Stops"><div>Stops</div></div>`);
+    for (const [val, label] of [['any','Any number of stops'],['nonstop','Nonstop only'],['one','1 stop or fewer']]) {
+      const r = $(`<div class="radio" role="radiogroup"><input type="radio" name="stops" id="stops-${val}" ${state.stops===val?'checked':''}><label for="stops-${val}">${label}</label></div>`);
+      r.querySelector('input').onclick = () => { state.stops = val; history.replaceState(null,'', location.pathname+'?'+new URLSearchParams({...Object.fromEntries(new URLSearchParams(location.search)), stops: val})); renderResults(); };
+      p.append(r); }
+    stops.after(p); };
+  const sortLabel = state.sort === 'price' ? 'Sorted by price, Change sort order' : 'Sorted by top flights, Change sort order.';
+  const sort = $(`<button aria-haspopup="menu" aria-expanded="false" aria-label="${sortLabel}">${sortLabel}</button>`);
+  sort.onclick = () => { closeAll(); const m = $(`<ul role="menu"></ul>`);
+    for (const [val, label] of [['top','Top flights'],['price','Price'],['dep','Departure time']]) { const li = $(`<li role="menuitemradio" aria-checked="${state.sort===val}">${label}</li>`);
+      li.onclick = () => { state.sort = val; history.replaceState(null,'', location.pathname+'?'+new URLSearchParams({...Object.fromEntries(new URLSearchParams(location.search)), sort: val})); renderResults(); }; m.append(li); }
+    sort.after(m); };
+  chips.append($(`<button aria-label="All filters">All filters</button>`), stops, $(`<button aria-haspopup="dialog" aria-expanded="false">Airlines, Not selected</button>`), sort);
+  app.append(chips);
+  let list = FLIGHTS.filter(f => state.stops !== 'nonstop' || f.stops === 0);
+  if (state.sort === 'price') list = [...list].sort((a,b) => a.price - b.price);
+  const ul = $(`<ul aria-label="Flight results"></ul>`);
+  for (const f of list) ul.append($(`<li class="flight"><div><b>${f.dep} – ${f.arr}</b><div>${f.airline}</div></div><div>${f.dur}</div><div>${f.stops ? f.stops + ' stop' : 'Nonstop'}</div><div><b>£${f.price}</b></div></li>`));
+  app.append($(`<h2>${state.sort === 'price' ? 'Sorted by price' : 'Top flights'}</h2>`), ul);
+}
+if (q.get('view') === 'results') { if (q.get('flaky') && !sessionStorage.retried) { sessionStorage.retried = 1; app.innerHTML = '<div class="err">Oops, something went wrong.<br><button>Reload</button></div>'; app.querySelector('button').onclick = () => location.reload(); } else renderResults(); }
+else renderForm();
+</script>
+</body></html>

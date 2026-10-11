@@ -1,0 +1,25 @@
+Jarvis incorporates and builds on the following open-source work.
+
+jev-ultrafast — https://github.com/browser-use/jev-ultrafast  (MIT, Copyright (c) 2026 Browser Use)
+  The observed-action architecture: indexed elements from a DOM snapshot, node identity, freshness markers (page key / guard /
+  marker), visibility and occlusion checks, and the "choose, don't generate" action space. Derived code: backend/jarvis/page.js
+  (from snapshot.js) and the executor semantics in backend/jarvis/browser.py and goal_runner.py.
+
+laya-ultrafast — https://github.com/ipenywis/laya-ultrafast  (MIT, Copyright (c) 2026 Browser Use; port of jev-ultrafast)
+  The Laya decision policy that composes narrow typed questions with site-independent rules. Derived code: backend/jarvis/policy.py
+  (from laya.py) and its tests (backend/tests/test_policy.py, from tests/test_laya.py), the sub-goal planning prompt in
+  backend/jarvis/prompts.py, and the Forma fixture backend/tests/fixtures/site/forma.html.
+
+browser-harness — https://github.com/browser-use/browser-harness  (MIT, Browser Use)
+  The approach to attaching to the user's Chrome over the DevTools Protocol, including the Chrome 144+ "Allow remote debugging"
+  flow and DevToolsActivePort discovery (backend/jarvis/chrome.py, cdp.py). Jarvis talks CDP directly from the sidecar process and
+  does not include browser-harness code or its telemetry.
+
+laya-mlx — https://github.com/mizorewww/laya-mlx  (Apache-2.0)
+  The MLX runtime used to run Laya locally; installed as a dependency.
+
+Laya — https://github.com/NandhaKishorM/laya  (Convai Innovations; Apache-2.0)
+  The typed-decision model. Jarvis downloads the converted checkpoint aac6fef/laya-typed-decisions-mlx from Hugging Face.
+
+Other dependencies keep their own licenses: FastAPI/Starlette/uvicorn (BSD), httpx (BSD), websockets (BSD), huggingface-hub (Apache-2.0),
+keyring (MIT), Tauri (MIT/Apache-2.0), React (MIT), Tailwind CSS (MIT), zustand (MIT), react-markdown (MIT).

@@ -1,0 +1,51 @@
+[project]
+name = "jarvis-agent"
+version = "0.1.0"
+description = "Local backend for the Jarvis macOS browser agent: Laya decisions, Chrome DevTools automation, LLM planning."
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.34,<1",
+    "websockets>=15,<16",
+    "httpx>=0.28,<1",
+    "pydantic>=2.9,<3",
+    "laya-mlx>=0.4,<0.5",
+    "huggingface-hub>=0.34,<2",
+    "keyring>=25,<26",
+]
+
+[project.scripts]
+jarvis-backend = "jarvis.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["jarvis"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4,<9",
+    "pytest-asyncio>=1.0,<2",
+    "ruff>=0.14,<1",
+    "pyinstaller>=6.11,<7",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+markers = [
+    "live: needs real Chrome (and a text model for planner tests); opt in with --live",
+    "laya: needs the Laya checkpoint downloaded",
+]

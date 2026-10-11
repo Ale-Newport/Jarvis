@@ -1,0 +1,13 @@
+node_modules
+dist
+*.log
+.DS_Store
+.env.local
+
+# Rust
+/src-tauri/target
+/src-tauri/gen/schemas
+
+# Packaged backend (produced by scripts/package-backend.sh); keep the placeholders
+/backend-dist/jarvis-backend/*
+!/backend-dist/jarvis-backend/.gitkeep

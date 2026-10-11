@@ -1,0 +1,399 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ design tokens */
+
+:root {
+  --bg: #ffffff;
+  --sidebar: #f2f2f6;
+  --surface: #ffffff;
+  --surface-2: #f5f5f8;
+  --surface-3: #ececf1;
+  --line: rgba(20, 20, 35, 0.09);
+  --line-strong: rgba(20, 20, 35, 0.16);
+  --fg: #1b1b1f;
+  --fg-2: #5a5c66;
+  --fg-3: #8b8d98;
+  --accent: #5557e8;
+  --accent-hover: #4a4bd9;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(85, 87, 232, 0.1);
+  --ok: #178a4c;
+  --ok-soft: rgba(23, 138, 76, 0.12);
+  --warn: #b86e00;
+  --warn-soft: rgba(214, 140, 0, 0.14);
+  --danger: #d2342f;
+  --danger-soft: rgba(210, 52, 47, 0.1);
+  --sh-sm: 0 1px 2px rgba(20, 20, 35, 0.06), 0 0 0 1px rgba(20, 20, 35, 0.04);
+  --sh-md: 0 8px 28px rgba(20, 20, 35, 0.12), 0 0 0 1px rgba(20, 20, 35, 0.06);
+  --sh-lg: 0 24px 64px rgba(20, 20, 35, 0.22), 0 0 0 1px rgba(20, 20, 35, 0.08);
+  --scrim: rgba(15, 15, 25, 0.32);
+  --code-bg: #f4f4f8;
+  color-scheme: light;
+}
+
+:root.dark {
+  --bg: #1c1c20;
+  --sidebar: #252529;
+  --surface: #26262b;
+  --surface-2: #2d2d33;
+  --surface-3: #37373e;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.17);
+  --fg: #f2f2f5;
+  --fg-2: #b0b2bc;
+  --fg-3: #7f818c;
+  --accent: #7577f5;
+  --accent-hover: #8789f8;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(117, 119, 245, 0.16);
+  --ok: #46c27e;
+  --ok-soft: rgba(70, 194, 126, 0.16);
+  --warn: #f0b04a;
+  --warn-soft: rgba(240, 176, 74, 0.16);
+  --danger: #ff6b66;
+  --danger-soft: rgba(255, 107, 102, 0.15);
+  --sh-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --sh-md: 0 10px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --sh-lg: 0 28px 70px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.09);
+  --scrim: rgba(0, 0, 0, 0.5);
+  --code-bg: #202024;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sidebar: var(--sidebar);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-code: var(--code-bg);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --shadow-sm: var(--sh-sm);
+  --shadow-md: var(--sh-md);
+  --shadow-lg: var(--sh-lg);
+}
+
+/* ------------------------------------------------------------------ base */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: var(--bg);
+}
+
+/* In the Tauri window the native vibrancy material shows through everything left transparent. */
+html.native,
+html.native body {
+  background: transparent;
+}
+
+body {
+  margin: 0;
+  color: var(--fg);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+/* Text people expect to select/copy */
+.selectable,
+.selectable * {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+button,
+[role="button"],
+a,
+select,
+summary {
+  cursor: default;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+*:focus {
+  outline: none;
+}
+*:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 1px;
+}
+/* text fields draw their own focus state (border / ring) */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* thin, unobtrusive scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--fg) 22%, transparent) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--fg) 22%, transparent);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--fg) 36%, transparent);
+  background-clip: content-box;
+  border: 3px solid transparent;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ------------------------------------------------------------------ motion */
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+.anim-pulse {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+.anim-spin {
+  animation: spin 0.9s linear infinite;
+}
+.anim-fade {
+  animation: fade-in 0.16s ease both;
+}
+.anim-pop {
+  animation: pop-in 0.16s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.anim-slide {
+  animation: slide-up 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 37%, var(--surface-2) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ------------------------------------------------------------------ markdown (assistant text) */
+
+.md {
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+.md > :first-child {
+  margin-top: 0;
+}
+.md > :last-child {
+  margin-bottom: 0;
+}
+.md p {
+  margin: 0.55em 0;
+}
+.md h1,
+.md h2,
+.md h3,
+.md h4 {
+  font-weight: 650;
+  line-height: 1.3;
+  margin: 1.1em 0 0.4em;
+}
+.md h1 {
+  font-size: 1.3em;
+}
+.md h2 {
+  font-size: 1.18em;
+}
+.md h3,
+.md h4 {
+  font-size: 1.06em;
+}
+.md ul,
+.md ol {
+  margin: 0.5em 0;
+  padding-left: 1.4em;
+}
+.md ul {
+  list-style: disc;
+}
+.md ol {
+  list-style: decimal;
+}
+.md li {
+  margin: 0.2em 0;
+}
+.md li > p {
+  margin: 0.2em 0;
+}
+.md a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.md a:hover {
+  text-decoration-color: var(--accent);
+}
+.md strong {
+  font-weight: 650;
+}
+.md blockquote {
+  margin: 0.7em 0;
+  padding: 0.1em 0 0.1em 0.9em;
+  border-left: 3px solid var(--line-strong);
+  color: var(--fg-2);
+}
+.md hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 1em 0;
+}
+.md code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  padding: 0.08em 0.38em;
+  border-radius: 6px;
+}
+.md pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 0.85em;
+}
+.md table {
+  border-collapse: collapse;
+  font-size: 0.94em;
+  width: 100%;
+}
+.md th,
+.md td {
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.md th {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+.md img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.md-compact p {
+  margin: 0.35em 0;
+}
+.md-compact {
+  font-size: 13.5px;
+}
+
+/* line-clamp helper that works in WKWebView */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

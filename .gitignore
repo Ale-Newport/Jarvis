@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+backend/build/
+backend/dist/
+*.egg-info/
+
+# Node / Tauri
+node_modules/
+app/dist/
+app/src-tauri/target/
+app/src-tauri/gen/schemas/
+app/backend-dist/jarvis-backend/*
+!app/backend-dist/jarvis-backend/.gitkeep
+
+# Local data
+.DS_Store
+artifacts/
+*.log
+.env
